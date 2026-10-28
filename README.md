@@ -1,122 +1,98 @@
-## Golang Clean Code Architecture Template
+# Django Clean Architecture API
 
-Go (Golang) Clean Architecture based on Reading Uncle Bob's Clean Architecture. This code using GoFiber, GORM and User registerm authentication feature.
+Ported from Golang Clean Architecture to Python 3.13 / Django 5.2, implementing Uncle Bob's Clean Architecture with PostgreSQL and JWT Authentication (Token Versioning).
 
-## Installation
-1. Replace "github.com/max38/golang-clean-code-architecture" with "your module name"
-2. Copy or Change "env.template" file name to ".env" or ".env.dev"
-3. Check on code for loading config in these files
+---
+
+## Clean Architecture & Project Structure
+
 ```
-src/infrastructure/database/postgres/migration/main.go
-src/infrastructure/gofiber/main.go
+django-clean-code-architecture/
+├── apps/
+│   ├── shared/
+│   │   └── models.py               # Abstract Base Model (created_at, updated_at)
+│   └── users/
+│       ├── models.py               # User Domain Model
+│       ├── services.py             # Business Logic
+│       ├── serializers.py          # DTOs Data validation & serialization
+│       ├── views.py                # Controllers HTTP Request/Response handling
+│       ├── authentication.py       # JWT validation & OpenAPI scheme
+│       └── urls.py                 # User Router mapping
+├── config/                         # Frameworks & Drivers
+│   ├── other_settings/
+│   │   ├── rest_framwork.py        # DRF, pagination & schema settings
+│   │   └── simple_jwt.py           # SimpleJWT settings & serializer bindings
+│   ├── settings.py                 # Core Django configuration
+│   ├── urls.py                     # Root URL routing & Swagger endpoints
+│   ├── wsgi.py
+│   └── asgi.py
+├── docker-compose.yml              # PostgreSQL 15 container setup
+├── pyproject.toml                  # Python version
+└── uv.lock                         # Pinned dependency lockfile
 ```
 
-4. Run Postgresql
-5. Migrate RDBMS
-6. Start web project
+---
 
+## Package Manager Installation (uv)
 
-### run postgresql on docker
+### macOS & Linux
 ```bash
-docker run -p 5432:5432 --name postgres-golang-first-api -e POSTGRES_PASSWORD=golang-first-api -d postgres:15
+curl -LsSf https://astral.sh/uv/install.sh | sh
+# Or via Homebrew (macOS): brew install uv
 ```
-or docker compose
+
+### Windows (PowerShell)
+```powershell
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+# Or via Winget: winget install --id=astral-sh.uv -e
+```
+
+### Universal (via pip)
 ```bash
-docker-compose up
+pip install uv
 ```
 
-### Migrate RDBMS
+---
+
+## Getting Started
+
+### 1. Start Database with Docker Compose
 ```bash
-go run src/infrastructure/database/postgres/migration/main.go
+docker compose up -d
 ```
+*(Runs PostgreSQL 15 on port 5432: database `khaojai_it_db` / user: `postgres` / password: `postgres`)*
 
-### start web project (Production)
-
+### 2. Install Dependencies with uv sync
 ```bash
-go run src/infrastructure/gofiber/main.go
+uv sync
 ```
 
-
-# Template for every projdct
-## Project Structure
-```
-src
- |-config
- |-domain
-    |-entities
-    |-models
-    |-repositories
- |-infrastructure
-    |-aws_lambda
-    |-database
-    |-gofiber
- |-interface
-    |-handlers
-       |-gofiber
-    |-repositories
-       |-postgres
- |-shared
- |-usecases
-```
-
-## Install lib
-
-### REST API Lib
+### 3. Run Database Migrations & Start Server
 ```bash
-go get github.com/gofiber/fiber/v2
+uv run python manage.py migrate
+uv run python manage.py runserver
 ```
+The application will be accessible at: `http://127.0.0.1:8000/`
 
-### Generate Swagger Document
-1. Install follow this https://github.com/gofiber/swagger
-2. Go to ChatGPT and prompt with
-```
-Please generate Declarative Comments Format for Swagger Doc follow this gofiber code.
-"""<Handler Code>"""
-```
-
-3. update Declarative Comments from ChatGPT to Handler
-
-4. Generate swagger.json
+### 4. Run Tests
 ```bash
-swag init -g src/infrastructure/gofiber/main.go -o src/infrastructure/gofiber/docs/
+uv run python manage.py test
 ```
 
-5. Go to localhost:3000/swagger/
+---
 
+## API Endpoints & Swagger UI
 
-### Configuration Lib
-```bash
-go get github.com/knadh/koanf/v2
-go get github.com/knadh/koanf/providers/file
-go get github.com/knadh/koanf/providers/env
-go get github.com/knadh/koanf/parsers/dotenv
-```
+Interactive API documentation with Authorize (Bearer Token) support:
+- Swagger UI: `http://127.0.0.1:8000/swagger/`
+- OpenAPI Schema: `http://127.0.0.1:8000/api/schema/`
 
-### GORM
-```bash
-go get -u gorm.io/gorm
-go get -u gorm.io/driver/postgresql
-```
+### Endpoints (Matching the original Go specification)
 
-### MongoDB
-if use mongodb
-```bash
-go get go.mongodb.org/mongo-driver
-go get go.mongodb.org/mongo-driver/mongo
-```
-
-
-## For Development
-
-### Install Gofiber cli
-follow this https://github.com/gofiber/cli
-
-### start web project (Development)
-
-```bash
-fiber dev -t ./src/infrastructure/gofiber/main.go
-```
-
-### Add More Model
-1. Define in src/domain/models/xxxx.go
-2. Add Model at src/config/crudModels.go
+| Method | Endpoint | Auth | Description |
+| :--- | :--- | :---: | :--- |
+| `POST` | `/api/v1/user/register/` | None | Register a new user (`email`, `password`, `first_name`, `last_name`) |
+| `POST` | `/api/v1/login/` | None | Authenticate user; returns `{user: {...}, token: {access, refresh}}` |
+| `POST` | `/api/v1/logout/` | Bearer | Invalidate access token immediately via Token Versioning |
+| `POST` | `/api/v1/refresh-token/` | None | Refresh access token (accepts both `refresh` and `refresh_token` keys) |
+| `GET` / `POST` | `/api/v1/user/profile/` | Bearer | Retrieve current user profile |

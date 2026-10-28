@@ -1,19 +1,19 @@
-version: '3.1'
+version: '3.8'
 
 services:
-
   db:
-    image: postgres:15
+    image: postgres:15-alpine
+    container_name: khaojai_postgres_db
+    restart: always
     environment:
-      POSTGRES_PASSWORD: golang-first-api
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: khaojai_it_db
     ports:
       - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
 
-  mongodb:
-    image: mongo:6.0.8
-    ports:
-      - "27017:27017"
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: golang-first-api
+volumes:
+  postgres_data:
 
