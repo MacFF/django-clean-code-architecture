@@ -10,15 +10,15 @@ Ported from Golang Clean Architecture to Python 3.13 / Django 5.2, implementing 
 django-clean-code-architecture/
 ├── apps/
 │   ├── shared/
-│   │   └── models.py               # [Layer 1: Entities] Abstract Base Model (created_at, updated_at)
+│   │   └── models.py               # Abstract Base Model (created_at, updated_at)
 │   └── users/
-│       ├── models.py               # [Layer 1: Entities] User Domain Model (with token_version)
-│       ├── services.py             # [Layer 2: Use Cases] Pure Business Logic (user_register, user_logout)
-│       ├── serializers.py          # [Layer 3: Interface Adapters - DTOs] Data validation & serialization
-│       ├── views.py                # [Layer 3: Interface Adapters - Controllers] HTTP Request/Response handling
-│       ├── authentication.py       # [Layer 3: Interface Adapters - Auth Guard] JWT validation & OpenAPI scheme
-│       └── urls.py                 # [Layer 4: Frameworks] User Router mapping
-├── config/                         # [Layer 4: Frameworks & Drivers]
+│       ├── models.py               # User Domain Model
+│       ├── services.py             # Business Logic
+│       ├── serializers.py          # DTOs Data validation & serialization
+│       ├── views.py                # Controllers HTTP Request/Response handling
+│       ├── authentication.py       # JWT validation & OpenAPI scheme
+│       └── urls.py                 # User Router mapping
+├── config/                         # Frameworks & Drivers
 │   ├── other_settings/
 │   │   ├── rest_framwork.py        # DRF, pagination & schema settings
 │   │   └── simple_jwt.py           # SimpleJWT settings & serializer bindings
@@ -27,7 +27,7 @@ django-clean-code-architecture/
 │   ├── wsgi.py
 │   └── asgi.py
 ├── docker-compose.yml              # PostgreSQL 15 container setup
-├── pyproject.toml                  # Project dependencies & Python version (>=3.13, <3.14)
+├── pyproject.toml                  # Python version
 └── uv.lock                         # Pinned dependency lockfile
 ```
 
